@@ -34,6 +34,21 @@ def find_btc_market():
     return None
 
 
+def find_real_bid(book):
+
+    for bid in book.bids:
+
+        price = float(bid.price)
+        size = float(bid.size)
+
+        liquidity = price * size
+
+        if liquidity > 10:   # ignore dust orders
+            return price
+
+    return None
+
+
 def get_market_price():
 
     market = find_btc_market()
@@ -55,12 +70,11 @@ def get_market_price():
         yes_book = client.get_order_book(yes_token)
         no_book = client.get_order_book(no_token)
 
-        if len(yes_book.bids) == 0 or len(no_book.bids) == 0:
-            return None, None
+        yes_price = find_real_bid(yes_book)
+        no_price = find_real_bid(no_book)
 
-        # use BID side (real tradable price)
-        yes_price = float(yes_book.bids[0].price)
-        no_price = float(no_book.bids[0].price)
+        if yes_price is None or no_price is None:
+            return None, None
 
         return yes_price, no_price
 
