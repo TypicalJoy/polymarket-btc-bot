@@ -18,14 +18,18 @@ def find_btc_market():
 
     try:
         r = requests.get(
-            "https://gamma-api.polymarket.com/markets?active=true&limit=50",
+            "https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=500",
             timeout=5
         )
 
         markets = r.json()
 
         for m in markets:
-            print("MARKET:", m.get("question"))
+
+            question = m.get("question", "").lower()
+
+            if "bitcoin" in question:
+                return m
 
         return None
 
@@ -39,7 +43,7 @@ def get_market_price():
     market = find_btc_market()
 
     if market is None:
-        print("BTC 5-min market not found")
+        print("BTC market not found")
         return None, None
 
     try:
