@@ -1,4 +1,3 @@
-import requests
 import pandas as pd
 import time
 import json
@@ -12,30 +11,20 @@ last_claim = time.time()
 host = "https://clob.polymarket.com"
 client = ClobClient(host)
 
-print("Connected to Polymarket")
+print("Connected to Polymarket CLOB")
 
 
 def find_btc_market():
 
-    r = requests.get(
-        "https://gamma-api.polymarket.com/events?active=true&limit=200",
-        timeout=5
-    )
+    markets = client.get_markets()
 
-    events = r.json()
+    for m in markets:
 
-    for e in events:
+        question = m.question.lower()
 
-        title = e.get("title", "").lower()
-
-        if "bitcoin" in title and "5" in title:
-
-            markets = e.get("markets", [])
-
-            if len(markets) > 0:
-                m = markets[0]
-                print("SELECTED MARKET:", m.get("question"))
-                return m
+        if "bitcoin" in question and "minute" in question:
+            print("SELECTED MARKET:", m.question)
+            return m
 
     return None
 
@@ -65,7 +54,7 @@ def get_market_price():
 
     try:
 
-        token_ids = market["clobTokenIds"]
+        token_ids = market.clobTokenIds
 
         if isinstance(token_ids, str):
             token_ids = json.loads(token_ids)
