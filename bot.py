@@ -20,17 +20,22 @@ print("Connected to Polymarket")
 def get_active_market():
 
     r = requests.get(
-        f"https://gamma-api.polymarket.com/events/{EVENT_SLUG}",
+        f"https://gamma-api.polymarket.com/events?slug={EVENT_SLUG}",
         timeout=5
     )
 
-    event = r.json()
+    events = r.json()
 
-    markets = event["markets"]
+    if len(events) == 0:
+        return None
+
+    event = events[0]
+
+    markets = event.get("markets", [])
 
     for m in markets:
 
-        if not m["closed"]:
+        if not m.get("closed", False):
             return m
 
     return None
@@ -118,16 +123,19 @@ while True:
     if last_trade_window != current_window and seconds_remaining <= 120:
 
         if yes_price >= BUY_THRESHOLD:
+
             place_bet("YES")
             log_trade("YES", yes_price)
             last_trade_window = current_window
 
         elif no_price >= BUY_THRESHOLD:
+
             place_bet("NO")
             log_trade("NO", no_price)
             last_trade_window = current_window
 
     if time.time() - last_claim > CLAIM_INTERVAL:
+
         claim_rewards()
         last_claim = time.time()
 
