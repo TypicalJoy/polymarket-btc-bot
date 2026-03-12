@@ -10,17 +10,20 @@ last_trade_window = None
 last_claim = time.time()
 
 def get_market_price():
-    r = requests.get(f"https://clob.polymarket.com/markets/{MARKET_ID}")
+
+    url = "https://clob.polymarket.com/orderbook/0xbtc"
+
+    r = requests.get(url)
     data = r.json()
 
-    if "outcomes" not in data:
-        print("Market data not ready:", data)
+    if "asks" not in data or "bids" not in data:
+        print("Orderbook not ready:", data)
         return None, None
 
-    yes_price = data["outcomes"][0]["price"]
-    no_price = data["outcomes"][1]["price"]
+    best_yes = float(data["asks"][0]["price"])
+    best_no = float(data["bids"][0]["price"])
 
-    return yes_price, no_price
+    return best_yes, best_no
 
 def place_bet(side):
     print("Placing bet:", side, "for $", BET_SIZE)
