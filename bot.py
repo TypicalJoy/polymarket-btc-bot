@@ -11,32 +11,32 @@ last_claim = time.time()
 
 def get_market_price():
 
-    url = "https://clob.polymarket.com/orderbook/0xbtc"
-
     try:
-        r = requests.get(url, timeout=5)
+        r = requests.get(
+            "https://gamma-api.polymarket.com/markets?limit=10&search=bitcoin",
+            timeout=5
+        )
 
-        if r.status_code != 200:
-            print("Bad response:", r.status_code)
+        markets = r.json()
+
+        market = None
+        for m in markets:
+            if "5" in m["question"] and "minute" in m["question"].lower():
+                market = m
+                break
+
+        if market is None:
+            print("BTC 5-min market not found")
             return None, None
 
-        data = r.json()
+        yes_price = float(market["outcomes"][0]["price"])
+        no_price = float(market["outcomes"][1]["price"])
+
+        return yes_price, no_price
 
     except Exception as e:
-        print("Request failed:", e)
+        print("API error:", e)
         return None, None
-
-    if "asks" not in data or "bids" not in data:
-        print("Orderbook not ready:", data)
-        return None, None
-
-    try:
-        best_yes = float(data["asks"][0]["price"])
-        best_no = float(data["bids"][0]["price"])
-    except:
-        return None, None
-
-    return best_yes, best_no
 
 def place_bet(side):
     print("Placing bet:", side, "for $", BET_SIZE)
