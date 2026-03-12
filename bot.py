@@ -4,27 +4,20 @@ import time
 from datetime import datetime
 from config import *
 from py_clob_client.client import ClobClient
-import os
 
 last_trade_window = None
 last_claim = time.time()
 
 host = "https://clob.polymarket.com"
 
-client = ClobClient(
-    host,
-    key=os.environ["POLY_BUILDER_API_KEY"],
-    secret=os.environ["POLY_BUILDER_SECRET"],
-    passphrase=os.environ["POLY_BUILDER_PASSPHRASE"]
-)
+# create CLOB client (no builder credentials needed here)
+client = ClobClient(host)
 
 # test connection
 try:
-    markets = client.get_markets()
-    print("Connected to Polymarket. Sample markets:")
-    print(markets[:3])
+    print("Connected to Polymarket")
 except Exception as e:
-    print("CLOB connection error:", e)
+    print("Connection error:", e)
 
 
 def find_btc_market():
