@@ -18,19 +18,24 @@ print("Connected to Polymarket")
 def find_btc_market():
 
     r = requests.get(
-        "https://gamma-api.polymarket.com/markets?active=true&limit=500",
+        "https://gamma-api.polymarket.com/events?category=crypto&limit=200",
         timeout=5
     )
 
-    markets = r.json()
+    events = r.json()
 
-    for m in markets:
+    for e in events:
 
-        q = m.get("question", "").lower()
+        title = e.get("title", "").lower()
 
-        if "bitcoin" in q and "minute" in q:
-            print("SELECTED MARKET:", m["question"])
-            return m
+        if "bitcoin" in title and "minute" in title:
+
+            markets = e.get("markets", [])
+
+            for m in markets:
+                if not m.get("closed", False):
+                    print("SELECTED MARKET:", m["question"])
+                    return m
 
     return None
 
