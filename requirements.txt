@@ -2,3 +2,4 @@ requests
 pandas
 web3
 python-dotenv
+py-clob-client
