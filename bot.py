@@ -6,8 +6,6 @@ from datetime import datetime
 from config import *
 from py_clob_client.client import ClobClient
 
-EVENT_SLUG = "btc-updown-5m-1773344400"
-
 last_trade_window = None
 last_claim = time.time()
 
@@ -17,25 +15,21 @@ client = ClobClient(host)
 print("Connected to Polymarket")
 
 
-def get_active_market():
+def find_btc_market():
 
     r = requests.get(
-        f"https://gamma-api.polymarket.com/events?slug={EVENT_SLUG}",
+        "https://gamma-api.polymarket.com/markets?active=true&limit=500",
         timeout=5
     )
 
-    events = r.json()
-
-    if len(events) == 0:
-        return None
-
-    event = events[0]
-
-    markets = event.get("markets", [])
+    markets = r.json()
 
     for m in markets:
 
-        if not m.get("closed", False):
+        q = m.get("question", "").lower()
+
+        if "bitcoin" in q and "minute" in q:
+            print("SELECTED MARKET:", m["question"])
             return m
 
     return None
@@ -58,10 +52,10 @@ def find_real_bid(book):
 
 def get_market_price():
 
-    market = get_active_market()
+    market = find_btc_market()
 
     if market is None:
-        print("No active market")
+        print("BTC 5-minute market not found")
         return None, None
 
     token_ids = market["clobTokenIds"]
@@ -123,19 +117,16 @@ while True:
     if last_trade_window != current_window and seconds_remaining <= 120:
 
         if yes_price >= BUY_THRESHOLD:
-
             place_bet("YES")
             log_trade("YES", yes_price)
             last_trade_window = current_window
 
         elif no_price >= BUY_THRESHOLD:
-
             place_bet("NO")
             log_trade("NO", no_price)
             last_trade_window = current_window
 
     if time.time() - last_claim > CLAIM_INTERVAL:
-
         claim_rewards()
         last_claim = time.time()
 
