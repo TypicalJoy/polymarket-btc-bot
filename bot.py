@@ -47,8 +47,11 @@ def get_market_price():
         return None, None
 
     try:
-        yes_price = float(market["outcomes"][0]["price"])
-        no_price = float(market["outcomes"][1]["price"])
+
+        prices = market["outcomePrices"]
+
+        yes_price = float(prices[0])
+        no_price = float(prices[1])
 
         return yes_price, no_price
 
