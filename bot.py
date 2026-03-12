@@ -10,21 +10,16 @@ last_claim = time.time()
 
 host = "https://clob.polymarket.com"
 
-# create CLOB client (no builder credentials needed here)
 client = ClobClient(host)
 
-# test connection
-try:
-    print("Connected to Polymarket")
-except Exception as e:
-    print("Connection error:", e)
+print("Connected to Polymarket")
 
 
 def find_btc_market():
 
     try:
         r = requests.get(
-            "https://gamma-api.polymarket.com/markets",
+            "https://gamma-api.polymarket.com/markets?active=true&limit=500",
             timeout=5
         )
 
@@ -32,9 +27,9 @@ def find_btc_market():
 
         for m in markets:
 
-            q = m.get("question", "").lower()
+            question = m.get("question", "").lower()
 
-            if "bitcoin" in q and "5" in q and "minute" in q:
+            if "bitcoin" in question and "5 minute" in question:
                 return m
 
         return None
