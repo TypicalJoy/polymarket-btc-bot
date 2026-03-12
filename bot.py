@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
 import time
+import json
 from datetime import datetime
 from config import *
 from py_clob_client.client import ClobClient
@@ -25,7 +26,6 @@ def find_btc_market():
         markets = r.json()
 
         for m in markets:
-
             question = m.get("question", "").lower()
 
             if "bitcoin" in question:
@@ -48,7 +48,11 @@ def get_market_price():
 
     try:
 
-        prices = market["outcomePrices"]
+        prices = market.get("outcomePrices")
+
+        # if prices come back as a string, convert to list
+        if isinstance(prices, str):
+            prices = json.loads(prices)
 
         yes_price = float(prices[0])
         no_price = float(prices[1])
