@@ -12,8 +12,14 @@ last_claim = time.time()
 def get_market_price():
     r = requests.get(f"https://clob.polymarket.com/markets/{MARKET_ID}")
     data = r.json()
+
+    if "outcomes" not in data:
+        print("Market data not ready:", data)
+        return None, None
+
     yes_price = data["outcomes"][0]["price"]
     no_price = data["outcomes"][1]["price"]
+
     return yes_price, no_price
 
 def place_bet(side):
@@ -40,6 +46,10 @@ while True:
     seconds_remaining = 300 - seconds_into_window
 
     yes_price, no_price = get_market_price()
+
+    if yes_price is None:
+        time.sleep(1)
+        continue
 
     if last_trade_window != current_window and seconds_remaining <= 120:
 
