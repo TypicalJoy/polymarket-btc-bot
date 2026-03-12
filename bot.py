@@ -55,8 +55,11 @@ def get_market_price():
         yes_book = client.get_order_book(yes_token)
         no_book = client.get_order_book(no_token)
 
-        yes_price = float(yes_book["asks"][0]["price"])
-        no_price = float(no_book["asks"][0]["price"])
+        if len(yes_book.asks) == 0 or len(no_book.asks) == 0:
+            return None, None
+
+        yes_price = float(yes_book.asks[0].price)
+        no_price = float(no_book.asks[0].price)
 
         return yes_price, no_price
 
