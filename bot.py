@@ -18,17 +18,22 @@ print("Connected to Polymarket")
 def find_btc_market():
 
     r = requests.get(
-        "https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=500",
+        "https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=200",
         timeout=5
     )
 
     markets = r.json()
 
+    # DEBUG: print market questions so we see what the API actually returns
+    for m in markets[:20]:
+        print("MARKET:", m.get("question"))
+
     for m in markets:
 
-        question = m.get("question", "").lower()
+        q = m.get("question", "").lower()
 
-        if "bitcoin" in question and "minute" in question:
+        if "bitcoin" in q:
+            print("SELECTED MARKET:", m.get("question"))
             return m
 
     return None
@@ -43,7 +48,7 @@ def find_real_bid(book):
 
         liquidity = price * size
 
-        if liquidity > 25:   # skip dust orders
+        if liquidity > 25:
             return price
 
     return None
@@ -54,7 +59,7 @@ def get_market_price():
     market = find_btc_market()
 
     if market is None:
-        print("BTC 5-minute market not found")
+        print("BTC market not found")
         return None, None
 
     try:
