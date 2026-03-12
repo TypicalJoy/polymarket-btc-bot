@@ -18,18 +18,14 @@ def find_btc_market():
 
     try:
         r = requests.get(
-            "https://gamma-api.polymarket.com/markets?active=true&limit=1000",
+            "https://gamma-api.polymarket.com/markets?active=true&limit=50",
             timeout=5
         )
 
         markets = r.json()
 
         for m in markets:
-
-            question = m.get("question", "").lower()
-
-            if "bitcoin" in question and "minute" in question:
-                return m
+            print("MARKET:", m.get("question"))
 
         return None
 
