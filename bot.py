@@ -1,3 +1,4 @@
+import requests
 import pandas as pd
 import time
 import json
@@ -5,37 +6,32 @@ from datetime import datetime
 from config import *
 from py_clob_client.client import ClobClient
 
+EVENT_SLUG = "btc-updown-5m-1773344400"
+
 last_trade_window = None
 last_claim = time.time()
 
 host = "https://clob.polymarket.com"
 client = ClobClient(host)
 
-print("Connected to Polymarket CLOB")
+print("Connected to Polymarket")
 
 
-def find_btc_market():
+def get_active_market():
 
-    market_ids = client.get_markets()
+    r = requests.get(
+        f"https://gamma-api.polymarket.com/events/{EVENT_SLUG}",
+        timeout=5
+    )
 
-    for market_id in market_ids:
+    event = r.json()
 
-        try:
+    markets = event["markets"]
 
-            market = client.get_market(market_id)
+    for m in markets:
 
-            question = market["question"]
-
-            print("MARKET:", question)
-
-            q = question.lower()
-
-            if "bitcoin" in q:
-                print("SELECTED MARKET:", question)
-                return market
-
-        except:
-            continue
+        if not m["closed"]:
+            return m
 
     return None
 
@@ -57,36 +53,30 @@ def find_real_bid(book):
 
 def get_market_price():
 
-    market = find_btc_market()
+    market = get_active_market()
 
     if market is None:
-        print("BTC market not found")
+        print("No active market")
         return None, None
 
-    try:
+    token_ids = market["clobTokenIds"]
 
-        token_ids = market["clobTokenIds"]
+    if isinstance(token_ids, str):
+        token_ids = json.loads(token_ids)
 
-        if isinstance(token_ids, str):
-            token_ids = json.loads(token_ids)
+    yes_token = token_ids[0]
+    no_token = token_ids[1]
 
-        yes_token = token_ids[0]
-        no_token = token_ids[1]
+    yes_book = client.get_order_book(yes_token)
+    no_book = client.get_order_book(no_token)
 
-        yes_book = client.get_order_book(yes_token)
-        no_book = client.get_order_book(no_token)
+    yes_price = find_real_bid(yes_book)
+    no_price = find_real_bid(no_book)
 
-        yes_price = find_real_bid(yes_book)
-        no_price = find_real_bid(no_book)
-
-        if yes_price is None or no_price is None:
-            return None, None
-
-        return yes_price, no_price
-
-    except Exception as e:
-        print("Orderbook read error:", e)
+    if yes_price is None or no_price is None:
         return None, None
+
+    return yes_price, no_price
 
 
 def place_bet(side):
@@ -111,6 +101,7 @@ def log_trade(side, price):
 while True:
 
     now = datetime.utcnow()
+
     current_window = int(now.timestamp() // 300)
 
     seconds_into_window = now.timestamp() % 300
