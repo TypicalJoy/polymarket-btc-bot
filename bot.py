@@ -13,15 +13,28 @@ def get_market_price():
 
     url = "https://clob.polymarket.com/orderbook/0xbtc"
 
-    r = requests.get(url)
-    data = r.json()
+    try:
+        r = requests.get(url, timeout=5)
+
+        if r.status_code != 200:
+            print("Bad response:", r.status_code)
+            return None, None
+
+        data = r.json()
+
+    except Exception as e:
+        print("Request failed:", e)
+        return None, None
 
     if "asks" not in data or "bids" not in data:
         print("Orderbook not ready:", data)
         return None, None
 
-    best_yes = float(data["asks"][0]["price"])
-    best_no = float(data["bids"][0]["price"])
+    try:
+        best_yes = float(data["asks"][0]["price"])
+        best_no = float(data["bids"][0]["price"])
+    except:
+        return None, None
 
     return best_yes, best_no
 
