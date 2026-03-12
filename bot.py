@@ -16,15 +16,23 @@ print("Connected to Polymarket CLOB")
 
 def find_btc_market():
 
-    markets = client.get_markets()
+    market_ids = client.get_markets()
 
-    for m in markets:
+    for market_id in market_ids:
 
-        question = m.question.lower()
+        try:
 
-        if "bitcoin" in question and "minute" in question:
-            print("SELECTED MARKET:", m.question)
-            return m
+            market = client.get_market(market_id)
+
+            question = market["question"].lower()
+
+            if "bitcoin" in question and "minute" in question:
+
+                print("SELECTED MARKET:", market["question"])
+                return market
+
+        except:
+            continue
 
     return None
 
@@ -54,7 +62,7 @@ def get_market_price():
 
     try:
 
-        token_ids = market.clobTokenIds
+        token_ids = market["clobTokenIds"]
 
         if isinstance(token_ids, str):
             token_ids = json.loads(token_ids)
