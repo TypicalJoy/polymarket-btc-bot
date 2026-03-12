@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 from config import *
 
-MARKET_ID = "BTC_5_MIN_MARKET_ID"
+MARKET_ID = "bitcoin-up-or-down-sep-30-5min"
 
 last_trade_window = None
 last_claim = time.time()
