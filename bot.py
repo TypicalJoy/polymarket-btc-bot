@@ -9,7 +9,6 @@ last_trade_window = None
 last_claim = time.time()
 
 host = "https://clob.polymarket.com"
-
 client = ClobClient(host)
 
 print("Connected to Polymarket")
@@ -19,7 +18,7 @@ def find_btc_market():
 
     try:
         r = requests.get(
-            "https://gamma-api.polymarket.com/markets?active=true&limit=500",
+            "https://gamma-api.polymarket.com/markets?active=true&limit=1000",
             timeout=5
         )
 
@@ -29,7 +28,7 @@ def find_btc_market():
 
             question = m.get("question", "").lower()
 
-            if "bitcoin" in question and "5 minute" in question:
+            if "bitcoin" in question and "minute" in question:
                 return m
 
         return None
