@@ -17,25 +17,21 @@ print("Connected to Polymarket")
 
 def find_btc_market():
 
-    try:
-        r = requests.get(
-            "https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=500",
-            timeout=5
-        )
+    r = requests.get(
+        "https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=500",
+        timeout=5
+    )
 
-        markets = r.json()
+    markets = r.json()
 
-        for m in markets:
-            question = m.get("question", "").lower()
+    for m in markets:
 
-            if "bitcoin" in question:
-                return m
+        q = m.get("question", "").lower()
 
-        return None
+        if "bitcoin" in q:
+            return m
 
-    except Exception as e:
-        print("Market lookup error:", e)
-        return None
+    return None
 
 
 def get_market_price():
@@ -48,19 +44,24 @@ def get_market_price():
 
     try:
 
-        prices = market.get("outcomePrices")
+        token_ids = market["clobTokenIds"]
 
-        # if prices come back as a string, convert to list
-        if isinstance(prices, str):
-            prices = json.loads(prices)
+        if isinstance(token_ids, str):
+            token_ids = json.loads(token_ids)
 
-        yes_price = float(prices[0])
-        no_price = float(prices[1])
+        yes_token = token_ids[0]
+        no_token = token_ids[1]
+
+        yes_book = client.get_order_book(yes_token)
+        no_book = client.get_order_book(no_token)
+
+        yes_price = float(yes_book["asks"][0]["price"])
+        no_price = float(no_book["asks"][0]["price"])
 
         return yes_price, no_price
 
     except Exception as e:
-        print("Price read error:", e)
+        print("Orderbook read error:", e)
         return None, None
 
 
