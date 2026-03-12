@@ -24,11 +24,14 @@ def find_btc_market():
 
             market = client.get_market(market_id)
 
-            question = market["question"].lower()
+            question = market["question"]
 
-            if "bitcoin" in question and "minute" in question:
+            print("MARKET:", question)
 
-                print("SELECTED MARKET:", market["question"])
+            q = question.lower()
+
+            if "bitcoin" in q:
+                print("SELECTED MARKET:", question)
                 return market
 
         except:
@@ -57,7 +60,7 @@ def get_market_price():
     market = find_btc_market()
 
     if market is None:
-        print("BTC 5-minute market not found")
+        print("BTC market not found")
         return None, None
 
     try:
