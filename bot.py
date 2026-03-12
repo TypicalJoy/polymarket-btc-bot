@@ -26,9 +26,9 @@ def find_btc_market():
 
     for m in markets:
 
-        q = m.get("question", "").lower()
+        question = m.get("question", "").lower()
 
-        if "bitcoin" in q:
+        if "bitcoin" in question and "minute" in question:
             return m
 
     return None
@@ -43,7 +43,7 @@ def find_real_bid(book):
 
         liquidity = price * size
 
-        if liquidity > 10:   # ignore dust orders
+        if liquidity > 25:   # skip dust orders
             return price
 
     return None
@@ -54,7 +54,7 @@ def get_market_price():
     market = find_btc_market()
 
     if market is None:
-        print("BTC market not found")
+        print("BTC 5-minute market not found")
         return None, None
 
     try:
